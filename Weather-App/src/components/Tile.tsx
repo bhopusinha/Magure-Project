@@ -1,5 +1,3 @@
-import React from 'react'
-import { isContext } from 'vm'
 import Wind from './icons/Wind'
 import Feels from './icons/Feels'
 import Humidity from './icons/Humidity'

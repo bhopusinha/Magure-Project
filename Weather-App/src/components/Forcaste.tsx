@@ -1,4 +1,3 @@
-import React from 'react'
 import { forcastType } from '../types'
 import Sunrise from './icons/Sunrise'
 import Sunset from './icons/Sunset'
