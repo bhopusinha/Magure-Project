@@ -1,0 +1,12 @@
+
+
+.flexCenter{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4;
+}
+
+.width100{
+    width: 100%;
+}
