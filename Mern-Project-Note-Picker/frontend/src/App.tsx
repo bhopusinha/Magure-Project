@@ -1,14 +1,13 @@
 import {Container} from "react-bootstrap";
 import styles from "./styles/NotePage.module.css";
-
 import Navbar from "./components/Navbar.tsx";
 import NotesPageLoggedInView from "./components/NotesPageLoggedInView.tsx";
 import { useEffect, useState } from "react";
 import { User } from "./types/user.ts";
-import api from "./hooks/axios/api.ts";
 import Signup from "./pages/user/Signup.tsx";
 import LoggedOutViewPage from "./components/LoggedOutViewPage.tsx";
 import Login from "./pages/user/Login.tsx";
+import useUser from "./hooks/api/useUser.ts";
 
 function App() {
 
@@ -17,15 +16,17 @@ function App() {
   const [showSignUpModal,setShowSignupModal]=useState(false);
   const [showLoginModal,setShowLoginModal]=useState(false);
 
+  const {getLoggedInUser}=useUser();
+
 
   useEffect(()=>{
     async function fetchLoggedInUser() {
-      try {
-          const response = await api.get(`/api/user/`);
-          setLoggedInUser(response.data); 
-      } catch (error) {
-        console.error(error);
-      }
+
+      const response=await getLoggedInUser();
+
+        if(response.success){
+          setLoggedInUser(response.response as User)
+        }
     }
 
     fetchLoggedInUser();

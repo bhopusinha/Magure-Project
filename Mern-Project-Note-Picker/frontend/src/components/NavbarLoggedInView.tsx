@@ -1,5 +1,5 @@
 import { User } from '../types/user'
-import { LogoutUser } from '../hooks/api/user'
+import useUser from '../hooks/api/useUser'
 import { Button, Navbar } from 'react-bootstrap'
 
 interface NavbarLoggedInProps{
@@ -9,7 +9,8 @@ interface NavbarLoggedInProps{
 
 const NavbarLoggedInView = ({onLogoutSuccessful,user}:NavbarLoggedInProps) => {
 
-
+  const {LogoutUser}=useUser();
+   
     async function userLogout(){
             await LogoutUser();
             onLogoutSuccessful()

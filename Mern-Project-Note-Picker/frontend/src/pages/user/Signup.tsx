@@ -1,10 +1,10 @@
-import { useContext, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { User, userRegister } from "../../types/user";
 import { useForm } from "react-hook-form";
 import TextInputForm from "../../components/form/TextInputForm";
 import styles from "../../styles/utils.module.css";
-import { ContextType, NoteContext } from "../../context/HttpProvider";
+import useUser from "../../hooks/api/useUser";
 
 interface SignUpType {
   onDismiss: () => void;
@@ -18,7 +18,19 @@ const Signup = ({ onDismiss, onSignUpSuccessful }: SignUpType) => {
     formState: { errors, isSubmitting },
   } = useForm<userRegister>({});
 
-  const { onRegister,user } = useContext(NoteContext) as ContextType;
+  const [user,setUser]=useState<User>();
+
+  const {SignUpcredential}=useUser();
+
+  const onSubmit=async(input:userRegister)=>{
+    
+    const response=await SignUpcredential(input);
+
+    if(response.success){
+      setUser(response.response as User);
+    }
+
+  }
 
   useEffect(() => {
     
@@ -34,7 +46,7 @@ const Signup = ({ onDismiss, onSignUpSuccessful }: SignUpType) => {
         <Modal.Title>SignUp</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form id="signUpForm" onSubmit={handleSubmit(onRegister)}>
+        <Form id="signUpForm" onSubmit={handleSubmit(onSubmit)}>
           <TextInputForm
             name="username"
             label="Username"

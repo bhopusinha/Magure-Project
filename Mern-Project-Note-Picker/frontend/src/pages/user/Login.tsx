@@ -3,8 +3,8 @@ import { User, userLogin } from "../../types/user";
 import { useForm } from "react-hook-form";
 import TextInputForm from "../../components/form/TextInputForm";
 import styles from "../../styles/utils.module.css";
-import { useContext, useEffect } from "react";
-import { ContextType, NoteContext } from "../../context/HttpProvider";
+import { useEffect, useState } from "react";
+import useUser from "../../hooks/api/useUser";
 
 interface LoginType {
   onDismiss: () => void;
@@ -18,7 +18,19 @@ const Login = ({ onDismiss, onLoginSuccessful }: LoginType) => {
     formState: { errors, isSubmitting },
   } = useForm<userLogin>({});
 
-  const { onLogin, user } = useContext(NoteContext) as ContextType;
+  const [user,setUser]=useState<User>();
+
+  const {loginUser}=useUser();
+
+
+  const onLogin = async (input:userLogin)=>{
+       const response=await loginUser(input);
+
+       if(response.success){
+        setUser(response.response as User)
+       }
+  }
+
 
   useEffect(() => {
     if (user) {

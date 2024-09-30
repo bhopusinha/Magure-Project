@@ -1,8 +1,9 @@
 import { Button, Form, Modal } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { createNotes, updateNotes } from "../hooks/api/note";
+import useNotes from "../hooks/api/useNote";
 import { createNote, Note } from "../types/note";
 import TextInputForm from "./form/TextInputForm";
+import { ApiResponseData } from "../types/api";
 
 interface AddEditNoteClose {
   noteToEdit?: Note | null;
@@ -10,31 +11,22 @@ interface AddEditNoteClose {
   onNoteSave: (note: Note) => void;
 }
 
-const AddNoteDialog = ({
-  onDismiss,
-  onNoteSave,
-  noteToEdit,
-}: AddEditNoteClose) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<createNote>({
-    defaultValues: {
-      title: noteToEdit?.title || "",
-      text: noteToEdit?.text || "",
-    },
-  });
+const AddNoteDialog = ({onDismiss,onNoteSave,noteToEdit,}: AddEditNoteClose) => {
+
+
+  const {register,handleSubmit,formState: { errors, isSubmitting },} = useForm<createNote>({defaultValues: {title: noteToEdit?.title || "",text: noteToEdit?.text || "",},});
+
+  const {updateNotes,createNotes}=useNotes();
 
   async function onSubmit(input: createNote) {
-    let noteResponse: Note;
+    let noteResponse: ApiResponseData;
     if (noteToEdit) {
-      noteResponse = await updateNotes(noteToEdit._id, input);
+         noteResponse=await updateNotes(noteToEdit._id, input);
     } else {
-      noteResponse = await createNotes(input);
+       noteResponse=await createNotes(input);
     }
     console.log(noteResponse);
-    onNoteSave(noteResponse);
+      onNoteSave(noteResponse.response as Note);
   }
 
   return (

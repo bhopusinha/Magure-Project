@@ -1,34 +1,47 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Col, Row, Spinner } from "react-bootstrap";
 import AddNoteDialog from "./AddEditNoteDialog";
 import { Note as NoteModel } from "../types/note";
 import Note from "../pages/note/Note";
 import styles from "../styles/NotePage.module.css";
-import { ContextType, NoteContext } from "../context/HttpProvider";
+import {useHttpMethodContext } from "../context/HttpProvider";
+import useNotes from "../hooks/api/useNote";
 
 const NotesPageLoggedInView = () => {
 
   const [shouldAddNote, setShouldAddNote] = useState(false);
   const [noteToEdit, setNoteToEdit] = useState<NoteModel | null>(null);
 
-  const { showLoding, fetchAndSetNotes, notes, setNotes, showError,ondeleteNote } = useContext(NoteContext) as ContextType;
+  const [notes,setNotes]=useState<NoteModel[]>([])
+
+  const {fetchNotes,deleteNote}=useNotes();
+
+  const {showError,showLoding}= useHttpMethodContext();
+
 
   useEffect(() => {
 
-    fetchAndSetNotes();
+    async function noteFetch(){
+       const response=await fetchNotes();
+          if(response.success){
+            setNotes(response.response as NoteModel[])
+          }
+    }
+
+    noteFetch();
 
   }, []);
 
 
   const noteGrid = (
     <Row xs={1} md={2} xl={3} className={`g-4 ${styles.noteGrid}`}>
-      {notes.map((note) => (
+      {notes && notes.map((note) => (
         <Col key={note._id}>
           <Note
             onNoteClicked={setNoteToEdit}
             note={note}
             className={styles.note}
-            onDeleteNote={ondeleteNote}
+            onDeleteNote={deleteNote}
           />
         </Col>
       ))}

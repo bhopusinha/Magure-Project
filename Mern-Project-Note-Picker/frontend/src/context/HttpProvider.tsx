@@ -1,87 +1,175 @@
-import React, { createContext, useState } from "react";
-import { Note } from "../types/note";
-import { User, userLogin, userRegister } from "../types/user";
-import { loginUser, SignUpcredential } from "../hooks/api/user";
-import { deleteNote, fetchNotes } from "../hooks/api/note";
+import React, { createContext, useCallback, useContext, useState } from "react";
+import axios from "axios";
+import { ApiResponseData } from "../types/api";
 
-export interface ContextType {
-  notes: Note[];
-  setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
-  onRegister: (input: userRegister) => void;
+const api = axios.create({
+  baseURL: "http://localhost:8000",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+const createApiErrorResponse = (error: unknown): ApiResponseData => {
+  let errorMsg = "Something went wrong";
+  if (error instanceof String) {
+    errorMsg = error.toString();
+  } else if (error instanceof Error) {
+    errorMsg = error.message;
+  }
+
+  return { success: false, errorMsg, response: [] };
+};
+
+export interface HttpMethodContextType {
   showLoding: boolean;
   showError: boolean;
-  fetchAndSetNotes: () => void;
-  ondeleteNote: (note: Note) => void;
-  user:User | undefined
-  onLogin:(input:userLogin)=>void
+  get: (endpoint: string, showLoader?: boolean) => Promise<ApiResponseData>;
+  post: (
+    endpoint: string,
+    data: object | Array<object>,
+    showLoader?: boolean
+  ) => Promise<ApiResponseData>;
+  patch: (
+    endpoint: string,
+    data: object | Array<object>,
+    showLoader?: boolean
+  ) => Promise<ApiResponseData>;
+  deleteMe: (
+    endpoint: string,
+    showLoader?: boolean
+  ) => Promise<ApiResponseData>;
 }
 
-export const NoteContext = createContext<ContextType | null>(null);
+export const HttpMethodContext = createContext<HttpMethodContextType | null>(null);
 
-const NoteProvider: React.FC<{ children: React.ReactNode }> = ({
+const HttpMethodContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-
-/*Notes */
-  const [notes, setNotes] = useState<Note[]>([]);
+  /*Notes */
+  // const [notes, setNotes] = useState<Note[]>([]);
 
   const [showLoding, setShowLoading] = useState(true);
   const [showError, setShowError] = useState(false);
 
+  // const { deleteNote, fetchNotes } = useNotes();
+  // const { loginUser, SignUpcredential } = useUser();
 
-  const fetchAndSetNotes = async () => {
-    setShowLoading(true);
-    setShowError(false);
-    const data = await fetchNotes();
-    if (data) {
-      setShowLoading(false);
-      setNotes(data);
-    } else {
-      setShowError(true);
-      setShowLoading(false);
-    }
-  };
+  const get = useCallback(
+    async (endpoint: string, showLoader = true): Promise<ApiResponseData> => {
+      setShowLoading(showLoader);
+      setShowError(false);
 
-  async function ondeleteNote(note: Note) {
-    const updateNotes = await deleteNote(note, notes);
-    if (updateNotes) {
-      setNotes(updateNotes);
-    }
-  }
+      return api
+        .get(endpoint)
+        .then((res) => {
+          return {
+            success: true,
+            errorMsg: "",
+            response: res.data,
+          };
+        })
+        .catch((err) => {
+          return createApiErrorResponse(err);
+        })
+        .finally(() => setShowLoading(false));
+    },
+    [setShowLoading]
+  );
 
+  const deleteMe = useCallback(
+    async (endpoint: string, showLoader = true): Promise<ApiResponseData> => {
+      setShowLoading(showLoader);
+      setShowError(false);
 
-  /*User */
-  const [user,setUser]=useState<User|undefined>();
+      return api
+        .delete(endpoint)
+        .then(() => {
+          return {
+            success: true,
+            errorMsg: "",
+            response: [],
+          };
+        })
+        .catch((err) => {
+          return createApiErrorResponse(err);
+        })
+        .finally(() => setShowLoading(false));
+    },
+    [setShowLoading]
+  );
 
+  const post = useCallback(
+    async (
+      endpoint: string,
+      data: object | Array<object>,
+      showLoader = true
+    ): Promise<ApiResponseData> => {
+      setShowLoading(showLoader);
+      setShowError(false);
 
-  async function onRegister(input: userRegister) {
-    const userResponse = await SignUpcredential(input);
-    if (userResponse) {
-      setUser(userResponse);
-    }
-  }
+      return api
+        .post(endpoint, data)
+        .then((res) => {
+          return {
+            success: true,
+            errorMsg: "",
+            response: res.data,
+          };
+        })
+        .catch((err) => {
+          return createApiErrorResponse(err);
+        })
+        .finally(() => setShowLoading(false));
+    },
+    [setShowLoading]
+  );
 
-  async function onLogin(input: userLogin) {
-    const userResponse = await loginUser(input);
-    if (userResponse) {
-      setUser(userResponse);
-    }
-  }
+  const patch = useCallback(
+    async (
+      endpoint: string,
+      data: object | Array<object>,
+      showLoader = true
+    ): Promise<ApiResponseData> => {
+      setShowLoading(showLoader);
+      setShowError(false);
 
+      return api
+        .patch(endpoint, data)
+        .then((res) => {
+          return {
+            success: true,
+            errorMsg: "",
+            response: res.data,
+          };
+        })
+        .catch((err) => {
+          return createApiErrorResponse(err);
+        })
+        .finally(() => setShowLoading(false));
+    },
+    [setShowLoading]
+  );
 
-  const value: ContextType = {
-    notes,
-    setNotes,
-    onRegister,
+  const value: HttpMethodContextType = {
+    get,
+    post,
+    patch,
+    deleteMe,
     showLoding,
     showError,
-    fetchAndSetNotes,
-    ondeleteNote,
-    user,
-    onLogin
   };
 
-  return <NoteContext.Provider value={value}>{children}</NoteContext.Provider>;
+  return <HttpMethodContext.Provider value={value}>{children}</HttpMethodContext.Provider>;
 };
 
-export default NoteProvider;
+export const useHttpMethodContext = () => {
+  const context = useContext(HttpMethodContext);
+
+  if (!context) {
+    throw new Error(`useHttpMethodContext must be use within a userProvider`);
+  }
+
+  return context;
+};
+
+export default HttpMethodContextProvider;
