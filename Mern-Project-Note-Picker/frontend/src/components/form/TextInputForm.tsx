@@ -14,9 +14,8 @@ interface textInputFormProp {
   name: string;
   label: string;
   registeroption?: RegisterOptions;
-  [x: string]: any;
+  [x: string]: unknown;
 }
-
 
 const TextInputForm = ({
   // name,
@@ -30,12 +29,13 @@ const TextInputForm = ({
   label,
   registeroption,
   ...props
-
 }: textInputFormProp) => {
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext(); // Using useFormContext to get form context
 
-  const { register, formState: { errors } } = useFormContext();  // Using useFormContext to get form context
-  
-  const error = errors[name] as FieldError | undefined;
+  const error = errors[name] as FieldError;
 
   return (
     <Form.Group className="mb-3" controlId={name + " input"}>
@@ -43,7 +43,7 @@ const TextInputForm = ({
       <Form.Control
         {...register(name, registeroption)}
         {...props}
-        isInvalid={error}
+        isInvalid={!!error}
       />
       <Form.Control.Feedback type="invalid">
         {error?.message}
