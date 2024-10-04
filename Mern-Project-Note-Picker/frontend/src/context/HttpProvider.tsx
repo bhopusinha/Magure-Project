@@ -3,7 +3,7 @@ import axios from "axios";
 import { ApiResponseData } from "../types/api";
 
 const api = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: "https://magure-project.onrender.com",
   headers: {
     "Content-Type": "application/json",
   },
